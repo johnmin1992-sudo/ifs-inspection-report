@@ -272,6 +272,12 @@ body.dark .sync-btn{background:#162030;color:#7AB3E0;border-color:#1E3A55;}
       </button>
     </div>
   </div>
+  <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
+    <button class="sync-btn" id="clear-btn" onclick="clearSynced()" style="background:var(--bg);color:var(--muted);border-color:var(--border);">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+      CLEAR SYNCED RECORDS
+    </button>
+  </div>
   <div id="rec-list"></div>
 </div>
 </div>
@@ -587,6 +593,19 @@ function resetForm(){
   updateOverall();
   const t=new Date();
   document.getElementById('f-date').value=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+}
+
+// CLEAR SYNCED — frees up storage, keeps pending records untouched
+function clearSynced(){
+  const all=getRecs();
+  const syncedCount=all.filter(r=>r.synced).length;
+  if(syncedCount===0){showToast('NO SYNCED RECORDS TO CLEAR');return;}
+  if(!confirm(`CLEAR ${syncedCount} SYNCED RECORD${syncedCount>1?'S':''} FROM THIS DEVICE?\n\nThey are already saved in the Sheet — this only frees up space on your phone. Pending records will NOT be affected.`))return;
+  const remaining=all.filter(r=>!r.synced);
+  setRecs(remaining);
+  showToast(`🗑 CLEARED ${syncedCount} SYNCED RECORD${syncedCount>1?'S':''}`);
+  renderRecs();
+  updateBadge();
 }
 
 // DELETE (pending only)
