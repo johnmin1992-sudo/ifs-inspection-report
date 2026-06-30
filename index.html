@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1F3864">
+<title>IFS FLIGHT INSPECTION — MAI</title>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<link rel="manifest" href="manifest.json">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#1F3864;--navy2:#2E4E8A;--gold:#EF9F27;--gold-dk:#C17D0A;
+  --green:#2D6A0A;--green-bg:#E4F3D8;--red:#A32D2D;--red-bg:#FCEBEB;
+  --amber-bg:#FAEEDA;--amber:#854F0B;--blue-bg:#E6F1FB;--blue:#185FA5;
+  --bg:#F0F2F7;--surface:#FFFFFF;--border:#D0D7E3;
+  --text:#1A1A2E;--muted:#5A6478;--light:#9CA3AF;--radius:12px;
+  --card-shadow:0 2px 8px rgba(0,0,0,.09);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;}
+body.dark{
+  --bg:#0F1923;--surface:#1A2535;--border:#2A3A50;
+  --text:#E8EDF5;--muted:#8A9BB5;--light:#4A5A70;
+  --blue-bg:#162030;--card-shadow:0 2px 8px rgba(0,0,0,.35);
+  --green-bg:#16301A;--red-bg:#3A1818;--amber-bg:#3A2A10;
+}
+
+/* HEADER */
+.hdr{background:var(--navy);color:#fff;padding:10px 16px;position:sticky;top:0;z-index:100;display:flex;flex-direction:column;gap:8px;box-shadow:0 2px 8px rgba(0,0,0,.2);}
+.hdr-row1{display:flex;align-items:center;justify-content:space-between;}
+.hdr-row2{display:flex;align-items:center;justify-content:space-between;}
+.hdr-title{font-size:15px;font-weight:700;letter-spacing:.02em;}
+.hdr-sub{font-size:10px;opacity:.65;letter-spacing:.04em;}
+
+.pill{font-size:10px;font-weight:700;padding:5px 12px;border-radius:20px;display:flex;align-items:center;gap:5px;letter-spacing:.03em;}
+.pill-offline{background:var(--gold);color:#7A4200;}
+.pill-online{background:#E4F3D8;color:#2D6A0A;}
+
+.theme-btn{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 16px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;font-family:inherit;min-height:34px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+.theme-btn:active{background:rgba(255,255,255,.32);}
+
+.banner{background:var(--blue-bg);color:var(--blue);font-size:12px;padding:8px 16px;display:none;align-items:center;gap:8px;border-bottom:1px solid #B5D4F4;}
+.banner.show{display:flex;}
+body.dark .banner{background:#162030;color:#7AB3E0;border-color:#1E3A55;}
+
+.wrap{max-width:480px;margin:0 auto;padding:16px 14px 100px;display:flex;flex-direction:column;gap:12px;}
+
+.card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:16px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--card-shadow);}
+.card-title{font-size:10px;font-weight:700;color:var(--gold-dk);text-transform:uppercase;letter-spacing:.1em;padding-bottom:4px;border-bottom:2px solid var(--gold);display:inline-block;}
+body.dark .card-title{color:var(--gold);}
+
+.field{display:flex;flex-direction:column;gap:5px;}
+.field label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+input,select,textarea{
+  font-family:inherit;font-size:14px;color:var(--text);
+  background:var(--bg);border:1.5px solid var(--border);
+  border-radius:8px;padding:10px 12px;width:100%;
+  transition:border-color .15s,background .15s;
+  -webkit-appearance:none;appearance:none;
+}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--navy);background:var(--surface);}
+body.dark input,body.dark select,body.dark textarea{background:#111D2B;color:var(--text);}
+body.dark input:focus,body.dark select:focus,body.dark textarea:focus{background:#162030;border-color:var(--gold);}
+
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;
+}
+textarea{resize:none;line-height:1.5;}
+
+/* AC SEARCH */
+.ac-wrap{position:relative;}
+.ac-inp{padding-left:36px !important;}
+.ac-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--light);pointer-events:none;}
+.ac-dd{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surface);border:1.5px solid var(--navy);border-radius:10px;overflow:hidden;z-index:200;box-shadow:0 6px 20px rgba(0,0,0,.15);max-height:220px;overflow-y:auto;}
+body.dark .ac-dd{border-color:var(--gold);box-shadow:0 6px 20px rgba(0,0,0,.4);}
+.ac-dd.open{display:block;}
+.ac-opt{padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;cursor:pointer;border-bottom:1px solid var(--border);}
+.ac-opt:last-child{border-bottom:none;}
+.ac-opt:hover,.ac-opt.hi{background:var(--blue-bg);}
+body.dark .ac-opt:hover{background:#162030;}
+
+/* INSPECTION ITEM */
+.insp-item{border:1.5px solid var(--border);border-radius:10px;overflow:hidden;}
+.insp-hdr{padding:11px 13px;display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--bg);}
+.insp-name{font-size:12px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.03em;flex:1;}
+.toggle-row{display:flex;gap:5px;flex-shrink:0;}
+.tog{font-size:11px;font-weight:700;width:64px;text-align:center;padding:7px 0;border-radius:18px;border:1.5px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;}
+.tog.ok-sel{background:var(--green-bg);border-color:var(--green);color:var(--green);}
+.tog.no-sel{background:var(--red-bg);border-color:var(--red);color:var(--red);}
+.insp-defect{padding:10px 13px;border-top:1px solid var(--border);background:var(--red-bg);}
+.insp-defect label{font-size:10px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px;}
+.insp-defect textarea{background:var(--surface);border-color:#F0BABA;color:var(--red);font-size:13px;}
+body.dark .insp-defect textarea{border-color:#5A2424;background:#1A2535;}
+
+/* OVERALL RESULT */
+.overall-row{display:flex;align-items:center;justify-content:space-between;padding:11px 13px;border-radius:10px;}
+.overall-row.ok{background:var(--green-bg);}
+.overall-row.defect{background:var(--red-bg);}
+.overall-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;gap:6px;}
+.overall-row.ok .overall-lbl{color:var(--green);}
+.overall-row.defect .overall-lbl{color:var(--red);}
+.auto-tag{font-size:8px;font-weight:700;padding:2px 6px;border-radius:8px;border:1px solid currentColor;}
+.overall-badge{font-size:11px;font-weight:700;padding:4px 12px;border-radius:18px;color:#fff;}
+.overall-row.ok .overall-badge{background:var(--green);}
+.overall-row.defect .overall-badge{background:var(--red);}
+
+.sub-wrap{position:fixed;bottom:56px;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:12px 14px;z-index:100;display:flex;gap:8px;}
+[data-page=rec] .sub-wrap{display:none;}
+.sub-btn{background:var(--navy);color:#fff;border:none;border-radius:var(--radius);padding:15px;font-size:15px;font-weight:700;flex:1;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit;letter-spacing:.04em;}
+.sub-btn:active{background:var(--navy2);}
+body.dark .sub-btn{background:var(--gold);color:#1A1A2E;}
+body.dark .sub-btn:active{background:#D4920A;}
+.sub-btn svg{width:18px;height:18px;stroke:currentColor;}
+.cancel-btn{background:var(--bg);color:var(--muted);border:1.5px solid var(--border);border-radius:var(--radius);padding:15px 18px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;}
+
+/* RECORDS */
+.rec-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:13px 15px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--card-shadow);margin-bottom:8px;}
+.rec-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+.rec-title{font-size:13px;font-weight:700;}
+.rec-sub{font-size:11px;color:var(--muted);margin-top:3px;}
+.rbadge{font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;flex-shrink:0;display:flex;align-items:center;gap:3px;white-space:nowrap;}
+.rbadge-p{background:var(--amber-bg);color:var(--amber);}
+.rbadge-s{background:var(--green-bg);color:var(--green);}
+.rbadge svg{width:11px;height:11px;stroke:currentColor;}
+.rec-actions{display:flex;gap:8px;}
+.rac-btn{flex:1;font-size:11px;font-weight:700;padding:8px;border-radius:8px;text-align:center;display:flex;align-items:center;justify-content:center;gap:5px;cursor:pointer;font-family:inherit;border:none;}
+.rac-btn.edit{background:var(--blue-bg);color:var(--blue);}
+.rac-btn.del{background:var(--red-bg);color:var(--red);}
+.rac-btn.view{background:var(--bg);color:var(--muted);}
+.rac-btn svg{width:13px;height:13px;stroke:currentColor;}
+.lock-note{font-size:10px;color:var(--light);text-align:center;font-style:italic;padding-top:2px;}
+.defect-chip{font-size:9px;font-weight:700;background:var(--red-bg);color:var(--red);padding:2px 8px;border-radius:10px;display:inline-block;margin-top:4px;}
+
+.bnav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;z-index:110;}
+.nbtn{flex:1;padding:10px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;font-weight:600;color:var(--light);cursor:pointer;background:none;border:none;font-family:inherit;text-transform:uppercase;letter-spacing:.04em;}
+.nbtn.act{color:var(--navy);}
+body.dark .nbtn.act{color:var(--gold);}
+.nbtn svg{width:22px;height:22px;stroke:currentColor;}
+.nbadge{background:var(--red);color:#fff;font-size:9px;padding:1px 6px;border-radius:10px;margin-top:-2px;}
+
+.page{display:none;}
+.page.act{display:block;}
+
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:#1A1A2E;color:#fff;font-size:13px;font-weight:600;padding:11px 22px;border-radius:24px;opacity:0;transition:all .25s;pointer-events:none;white-space:nowrap;z-index:999;max-width:90vw;text-align:center;white-space:normal;}
+body.dark .toast{background:var(--gold);color:#1A1A2E;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+.empty{text-align:center;padding:48px 20px;color:var(--muted);}
+.empty svg{width:52px;height:52px;stroke:var(--light);margin-bottom:14px;}
+.empty p{font-size:14px;font-weight:500;}
+
+.sync-btn{background:var(--blue-bg);color:var(--blue);border:1.5px solid #B5D4F4;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit;}
+.sync-btn:active{opacity:.8;}
+.sync-btn:disabled{opacity:.5;cursor:not-allowed;}
+body.dark .sync-btn{background:#162030;color:#7AB3E0;border-color:#1E3A55;}
+
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-row1">
+    <div>
+      <div class="hdr-title">IFS FLIGHT INSPECTION</div>
+      <div class="hdr-sub">MYANMAR AIRWAYS INTERNATIONAL</div>
+    </div>
+    <div id="netPill" class="pill pill-offline">
+      <svg width="8" height="8" viewBox="0 0 10 10"><circle cx="5" cy="5" r="5" fill="currentColor"/></svg>
+      OFFLINE
+    </div>
+  </div>
+  <div class="hdr-row2">
+    <button class="theme-btn" onclick="toggleTheme()" id="theme-btn">🌙 DARK MODE</button>
+    <div id="net-status" style="font-size:10px;opacity:.6;font-weight:600;"></div>
+  </div>
+</div>
+
+<div id="banner" class="banner">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+  BACK ONLINE — SYNCING PENDING RECORDS...
+</div>
+
+<!-- NEW / EDIT INSPECTION PAGE -->
+<div id="page-new" class="page act">
+<div class="wrap">
+
+  <div class="card">
+    <div class="card-title" id="form-title">BASIC INFO</div>
+
+    <div class="field">
+      <label>INSPECTION DATE</label>
+      <input type="date" id="f-date">
+    </div>
+
+    <div class="row2">
+      <div class="field">
+        <label>INSPECTOR 1</label>
+        <select id="f-insp1"><option value="">LOADING...</option></select>
+      </div>
+      <div class="field">
+        <label>INSPECTOR 2</label>
+        <select id="f-insp2"><option value="">LOADING...</option></select>
+      </div>
+    </div>
+
+    <div class="row2">
+      <div class="field">
+        <label>AC REG</label>
+        <div class="ac-wrap">
+          <svg class="ac-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="f-ac-txt" class="ac-inp" placeholder="SEARCH REG..." autocomplete="off">
+          <input type="hidden" id="f-ac-val">
+          <div class="ac-dd" id="ac-dd"></div>
+        </div>
+      </div>
+      <div class="field">
+        <label>FLIGHT NO</label>
+        <input type="text" id="f-flt" placeholder="E.G. 8M-231" autocomplete="off" oninput="this.value=this.value.toUpperCase()">
+      </div>
+    </div>
+  </div>
+
+  <!-- INSPECTION CHECKLIST -->
+  <div class="card">
+    <div class="card-title">INSPECTION CHECKLIST</div>
+    <div id="insp-list"></div>
+
+    <div class="overall-row ok" id="overall-row">
+      <div class="overall-lbl">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>
+        OVERALL RESULT <span class="auto-tag">AUTO</span>
+      </div>
+      <div class="overall-badge" id="overall-badge">NORMAL</div>
+    </div>
+  </div>
+
+  <!-- COMMENTS -->
+  <div class="card">
+    <div class="card-title">OVERALL COMMENTS</div>
+    <div class="field">
+      <textarea id="f-comments" rows="3" placeholder="ANY ADDITIONAL REMARKS..." oninput="this.value=this.value.toUpperCase()" style="text-transform:uppercase;"></textarea>
+    </div>
+  </div>
+
+</div>
+<div class="sub-wrap">
+  <button class="cancel-btn" id="cancel-btn" style="display:none;" onclick="cancelEdit()">CANCEL</button>
+  <button class="sub-btn" onclick="saveInspection()" id="save-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+    <span id="save-btn-txt">SAVE & SYNC</span>
+  </button>
+</div>
+</div>
+
+<!-- RECORDS PAGE -->
+<div id="page-rec" class="page">
+<div class="wrap" style="padding-bottom:80px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+    <div class="card-title" style="font-size:11px;">SAVED RECORDS</div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div id="pend-lbl" style="font-size:11px;color:var(--muted);font-weight:600;"></div>
+      <button class="sync-btn" id="sync-btn" onclick="syncAll()">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        SYNC ALL
+      </button>
+    </div>
+  </div>
+  <div id="rec-list"></div>
+</div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bnav">
+  <button class="nbtn act" id="nb-new" onclick="showPage('new')">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    NEW
+  </button>
+  <button class="nbtn" id="nb-rec" onclick="showPage('rec')">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    RECORDS
+    <div class="nbadge" id="nb-badge" style="display:none;">0</div>
+  </button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SHEET_URL='https://script.google.com/macros/s/AKfycbyZb_89G6zcoqX0oS-HHd5BDeQjSM6c3Nij19VKwTx_YHrTRjWAGijyJSIBEyCykt4mtg/exec';
+const TOKEN='MAI-IFS-INSP-2026';
+
+const AC_FALLBACK=['ALY','ALZ','ALK','ALT','ALJ','ALN','AGR','AGV','ALP','AMU','AMA','AMF','AJW','PK-MYC','RP-C9866'];
+const STAFF_FALLBACK=['YE WIN AUNG','TIN MAUNG NAING','HTUT KO KO','MIN MIN OO','PHYO THURA AUNG'];
+
+// 5 inspection categories — id, label
+const INSP_ITEMS=[
+  {id:'cabinCleaning', label:'CABIN CLEANING'},
+  {id:'galleyToilet',  label:'GALLEY & TOILET CLEANING'},
+  {id:'scent',         label:'SCENT CONDITION'},
+  {id:'equipment',     label:'SERVICEABLE EQUIPMENT & INTERIOR'},
+  {id:'documents',     label:'UPDATE IN-FLIGHT DOCUMENTS'}
+];
+// state: { cabinCleaning:'OK'|'NOT OK'|'', cabinCleaning_d:'defect text', ... }
+let inspSt={};
+function resetInspSt(){
+  inspSt={};
+  INSP_ITEMS.forEach(it=>{inspSt[it.id]='';inspSt[it.id+'_d']='';});
+}
+resetInspSt();
+
+let editingId=null; // null = new entry, else = id of record being edited
+
+// THEME
+function toggleTheme(){
+  const dark=document.body.classList.toggle('dark');
+  localStorage.setItem('ifsi_theme',dark?'dark':'light');
+  document.getElementById('theme-btn').textContent=dark?'☀️ LIGHT MODE':'🌙 DARK MODE';
+  document.querySelector('meta[name=theme-color]').content=dark?'#0F1923':'#1F3864';
+}
+function loadTheme(){
+  if(localStorage.getItem('ifsi_theme')==='dark'){
+    document.body.classList.add('dark');
+    document.getElementById('theme-btn').textContent='☀️ LIGHT MODE';
+    document.querySelector('meta[name=theme-color]').content='#0F1923';
+  }
+}
+
+// INIT
+window.addEventListener('DOMContentLoaded',()=>{
+  loadTheme();
+  const t=new Date();
+  document.getElementById('f-date').value=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+  const el=document.getElementById('netPill');
+  el.className='pill pill-offline';
+  el.innerHTML=`<svg width="8" height="8" viewBox="0 0 10 10"><circle cx="5" cy="5" r="5" fill="currentColor"/></svg> CHECKING...`;
+  buildInspList();
+  setupAC();
+  loadConfig();
+  checkNet();
+  updateBadge();
+  window.addEventListener('online',()=>checkNet());
+  window.addEventListener('offline',()=>{const e=document.getElementById('netPill');setOffline(e,document.getElementById('banner'));});
+  setInterval(checkNet, 30000);
+});
+
+// NETWORK CHECK
+async function checkNet(){
+  const el=document.getElementById('netPill');
+  const bn=document.getElementById('banner');
+  if(!navigator.onLine){setOffline(el,bn);return;}
+  try{
+    const ctrl=new AbortController();
+    const tid=setTimeout(()=>ctrl.abort(),3000);
+    await fetch('https://www.google.com/favicon.ico',{mode:'no-cors',cache:'no-store',signal:ctrl.signal});
+    clearTimeout(tid);
+    const wasOffline=el.classList.contains('pill-offline');
+    el.className='pill pill-online';
+    el.innerHTML=`<svg width="8" height="8" viewBox="0 0 10 10"><circle cx="5" cy="5" r="5" fill="currentColor"/></svg> ONLINE`;
+    if(wasOffline){
+      bn.classList.add('show');
+      setTimeout(()=>bn.classList.remove('show'),3000);
+      autoSync();
+    }
+  }catch(e){setOffline(el,bn);}
+}
+function setOffline(el,bn){
+  el.className='pill pill-offline';
+  el.innerHTML=`<svg width="8" height="8" viewBox="0 0 10 10"><circle cx="5" cy="5" r="5" fill="currentColor"/></svg> OFFLINE`;
+  if(bn)bn.classList.remove('show');
+}
+
+// AC SEARCH
+let AC_LIST=[...AC_FALLBACK];
+function setupAC(){
+  const inp=document.getElementById('f-ac-txt');
+  inp.addEventListener('focus',()=>renderAC(inp.value));
+  inp.addEventListener('input',()=>{document.getElementById('f-ac-val').value='';renderAC(inp.value);});
+  document.addEventListener('click',e=>{if(!e.target.closest('.ac-wrap'))document.getElementById('ac-dd').classList.remove('open');});
+}
+function renderAC(q){
+  const dd=document.getElementById('ac-dd');
+  const qU=q.toUpperCase().replace(/\s/g,'');
+  const list=qU?AC_LIST.filter(r=>r.replace(/\s/g,'').includes(qU)):AC_LIST;
+  dd.innerHTML=list.map(r=>`<div class="ac-opt" onclick="selAC('${r}')">${r}</div>`).join('');
+  dd.classList.toggle('open',list.length>0);
+}
+function selAC(reg){
+  document.getElementById('f-ac-txt').value=reg;
+  document.getElementById('f-ac-val').value=reg;
+  document.getElementById('ac-dd').classList.remove('open');
+}
+
+// CONFIG — Staff + AC Reg from Sheet, cached + fallback
+async function loadConfig(){
+  const sel1=document.getElementById('f-insp1');
+  const sel2=document.getElementById('f-insp2');
+  function fillStaff(names){
+    const opts='<option value="">SELECT...</option>'+names.map(n=>`<option>${n}</option>`).join('');
+    sel1.innerHTML=opts;sel2.innerHTML=opts;
+  }
+  const cachedStaff=localStorage.getItem('ifsi_staff');
+  const cachedAC=localStorage.getItem('ifsi_ac');
+  if(cachedStaff)fillStaff(JSON.parse(cachedStaff));
+  if(cachedAC)AC_LIST=JSON.parse(cachedAC);
+
+  if(!navigator.onLine){
+    if(!cachedStaff)fillStaff(STAFF_FALLBACK);
+    return;
+  }
+  try{
+    const res=await fetch(SHEET_URL+'?action=getConfig');
+    const data=await res.json();
+    if(data.result==='ok'){
+      if(data.staff&&data.staff.length>0){
+        fillStaff(data.staff);
+        localStorage.setItem('ifsi_staff',JSON.stringify(data.staff));
+      } else if(!cachedStaff){fillStaff(STAFF_FALLBACK);}
+      if(data.acRegs&&data.acRegs.length>0){
+        AC_LIST=data.acRegs;
+        localStorage.setItem('ifsi_ac',JSON.stringify(data.acRegs));
+      }
+    } else if(!cachedStaff){fillStaff(STAFF_FALLBACK);}
+  }catch(e){
+    if(!cachedStaff)fillStaff(STAFF_FALLBACK);
+  }
+}
+
+// INSPECTION CHECKLIST UI
+function buildInspList(){
+  document.getElementById('insp-list').innerHTML=INSP_ITEMS.map(it=>`
+    <div class="insp-item" id="ii-${it.id}">
+      <div class="insp-hdr">
+        <div class="insp-name">${it.label}</div>
+        <div class="toggle-row">
+          <button type="button" class="tog" id="tog-${it.id}-ok" onclick="setInsp('${it.id}','OK')">✓ OK</button>
+          <button type="button" class="tog" id="tog-${it.id}-no" onclick="setInsp('${it.id}','NOT OK')">✗ NOT OK</button>
+        </div>
+      </div>
+      <div class="insp-defect" id="def-${it.id}" style="display:none;">
+        <label>DEFECT DETAIL</label>
+        <textarea rows="2" placeholder="DESCRIBE THE DEFECT..." oninput="inspSt['${it.id}_d']=this.value.toUpperCase();this.value=this.value.toUpperCase();" style="text-transform:uppercase;"></textarea>
+      </div>
+    </div>`).join('');
+}
+function setInsp(id,val){
+  inspSt[id]=val;
+  const okBtn=document.getElementById(`tog-${id}-ok`);
+  const noBtn=document.getElementById(`tog-${id}-no`);
+  const defBox=document.getElementById(`def-${id}`);
+  okBtn.classList.toggle('ok-sel',val==='OK');
+  noBtn.classList.toggle('no-sel',val==='NOT OK');
+  defBox.style.display=val==='NOT OK'?'block':'none';
+  updateOverall();
+}
+function updateOverall(){
+  const hasNotOk=INSP_ITEMS.some(it=>inspSt[it.id]==='NOT OK');
+  const row=document.getElementById('overall-row');
+  const badge=document.getElementById('overall-badge');
+  row.className='overall-row '+(hasNotOk?'defect':'ok');
+  badge.textContent=hasNotOk?'DEFECT FOUND':'NORMAL';
+}
+
+// STORAGE
+function getRecs(){try{return JSON.parse(localStorage.getItem('ifsi_records')||'[]');}catch{return[];}}
+function setRecs(r){localStorage.setItem('ifsi_records',JSON.stringify(r));}
+
+// SAVE (new or edit)
+let _saving=false;
+function saveInspection(){
+  if(_saving){showToast('⚠ PLEASE WAIT...');return;}
+  const date=document.getElementById('f-date').value;
+  const insp1=document.getElementById('f-insp1').value;
+  const insp2=document.getElementById('f-insp2').value;
+  const ac=document.getElementById('f-ac-val').value||document.getElementById('f-ac-txt').value.trim().toUpperCase();
+  const flt=document.getElementById('f-flt').value.trim();
+  const comments=document.getElementById('f-comments').value.trim();
+
+  if(!date||!insp1||!ac||!flt){showToast('⚠ FILL IN REQUIRED FIELDS');return;}
+  const allRated=INSP_ITEMS.every(it=>inspSt[it.id]==='OK'||inspSt[it.id]==='NOT OK');
+  if(!allRated){showToast('⚠ RATE ALL INSPECTION ITEMS');return;}
+  const missingDefect=INSP_ITEMS.find(it=>inspSt[it.id]==='NOT OK'&&!inspSt[it.id+'_d'].trim());
+  if(missingDefect){showToast('⚠ ADD DEFECT DETAIL FOR '+missingDefect.label);return;}
+
+  const dupKey=`${date}|${flt.toUpperCase()}|${ac.toUpperCase()}`;
+  const all=getRecs();
+  const dup=all.find(r=>r.dupKey===dupKey && r.id!==editingId);
+  if(dup){showToast('⚠ DUPLICATE: FLT '+flt+' / '+ac+' ALREADY SAVED');return;}
+
+  const overall=INSP_ITEMS.some(it=>inspSt[it.id]==='NOT OK')?'DEFECT FOUND':'NORMAL';
+
+  const recData={
+    date,dupKey,token:TOKEN,
+    inspector1:insp1,inspector2:insp2,
+    acreg:ac,flightno:flt,
+    cabinCleaning:inspSt.cabinCleaning, cabinDefect:inspSt.cabinCleaning_d,
+    galleyToilet:inspSt.galleyToilet,   galleyDefect:inspSt.galleyToilet_d,
+    scent:inspSt.scent,                 scentDefect:inspSt.scent_d,
+    equipment:inspSt.equipment,         equipmentDefect:inspSt.equipment_d,
+    documents:inspSt.documents,         documentsDefect:inspSt.documents_d,
+    overall,comments:comments||''
+  };
+
+  _saving=true;
+  const btn=document.getElementById('save-btn');
+  if(btn){btn.disabled=true;btn.style.opacity='0.6';}
+  setTimeout(()=>{_saving=false;if(btn){btn.disabled=false;btn.style.opacity='';}},3000);
+
+  if(editingId){
+    // EDIT existing pending record
+    const idx=all.findIndex(r=>r.id===editingId);
+    if(idx>-1){
+      all[idx]={...all[idx],...recData,id:editingId,synced:false,savedAt:new Date().toISOString()};
+      setRecs(all);
+      showToast('✓ UPDATED');
+      if(navigator.onLine)syncRecord(all[idx]);
+    }
+  } else {
+    // NEW record
+    const rec={id:Date.now(),...recData,synced:false,savedAt:new Date().toISOString()};
+    all.unshift(rec);
+    setRecs(all);
+    showToast('✓ SAVED (PENDING)');
+    if(navigator.onLine)syncRecord(rec);
+  }
+  cancelEdit();
+  updateBadge();
+}
+
+// EDIT MODE
+function startEdit(id){
+  const rec=getRecs().find(r=>r.id===id);
+  if(!rec)return;
+  if(rec.synced){showToast('🔒 SYNCED RECORDS CANNOT BE EDITED');return;}
+  editingId=id;
+  document.getElementById('form-title').textContent='EDIT INSPECTION';
+  document.getElementById('cancel-btn').style.display='block';
+  document.getElementById('save-btn-txt').textContent='UPDATE & SYNC';
+
+  document.getElementById('f-date').value=rec.date;
+  document.getElementById('f-insp1').value=rec.inspector1||'';
+  document.getElementById('f-insp2').value=rec.inspector2||'';
+  document.getElementById('f-ac-txt').value=rec.acreg;
+  document.getElementById('f-ac-val').value=rec.acreg;
+  document.getElementById('f-flt').value=rec.flightno;
+  document.getElementById('f-comments').value=rec.comments||'';
+
+  resetInspSt();
+  INSP_ITEMS.forEach(it=>{
+    const v=rec[it.id];
+    if(v==='OK'||v==='NOT OK')setInsp(it.id,v);
+    const dKey=it.id+'Defect';
+    if(rec[dKey]){
+      inspSt[it.id+'_d']=rec[dKey];
+      const ta=document.querySelector(`#def-${it.id} textarea`);
+      if(ta)ta.value=rec[dKey];
+    }
+  });
+  updateOverall();
+  showPage('new');
+  window.scrollTo(0,0);
+}
+function cancelEdit(){
+  editingId=null;
+  document.getElementById('form-title').textContent='BASIC INFO';
+  document.getElementById('cancel-btn').style.display='none';
+  document.getElementById('save-btn-txt').textContent='SAVE & SYNC';
+  resetForm();
+}
+function resetForm(){
+  document.getElementById('f-insp1').value='';
+  document.getElementById('f-insp2').value='';
+  document.getElementById('f-ac-txt').value='';
+  document.getElementById('f-ac-val').value='';
+  document.getElementById('f-flt').value='';
+  document.getElementById('f-comments').value='';
+  resetInspSt();
+  INSP_ITEMS.forEach(it=>{
+    document.getElementById(`tog-${it.id}-ok`).classList.remove('ok-sel');
+    document.getElementById(`tog-${it.id}-no`).classList.remove('no-sel');
+    document.getElementById(`def-${it.id}`).style.display='none';
+    const ta=document.querySelector(`#def-${it.id} textarea`);
+    if(ta)ta.value='';
+  });
+  updateOverall();
+  const t=new Date();
+  document.getElementById('f-date').value=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+}
+
+// DELETE (pending only)
+function deleteRec(id){
+  const rec=getRecs().find(r=>r.id===id);
+  if(!rec)return;
+  if(rec.synced){showToast('🔒 SYNCED RECORDS CANNOT BE DELETED');return;}
+  const label='FLT '+rec.flightno+' / '+rec.acreg+' ('+rec.date+')';
+  if(!confirm('DELETE '+label+'?'))return;
+  const all=getRecs().filter(r=>r.id!==id);
+  setRecs(all);
+  showToast('🗑 DELETED');
+  renderRecs();
+  updateBadge();
+}
+
+// SYNC
+const _syncing=new Set();
+async function syncRecord(rec){
+  if(_syncing.has(rec.id))return false;
+  _syncing.add(rec.id);
+  try{
+    const res=await fetch(SHEET_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(rec)});
+    const data=await res.json();
+    if(data.result==='duplicate'){
+      markSynced(rec.id);
+      showToast('⚠ FLT '+rec.flightno+'/'+rec.acreg+' ALREADY IN SHEET — DUPLICATE');
+      return false;
+    }
+    if(data.result==='unauthorized'){
+      showToast('⚠ SYNC REJECTED — CONTACT ADMIN');
+      return false;
+    }
+    markSynced(rec.id);
+    return true;
+  }catch(e){
+    try{
+      await fetch(SHEET_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(rec)});
+      markSynced(rec.id);
+      return true;
+    }catch(e2){return false;}
+  }
+  finally{_syncing.delete(rec.id);}
+}
+async function syncAll(){
+  if(!navigator.onLine){showToast('⚠ NO CONNECTION');return;}
+  const btn=document.getElementById('sync-btn');
+  btn.disabled=true;
+  btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" style="animation:spin 1s linear infinite"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> SYNCING...`;
+  const pending=getRecs().filter(r=>!r.synced);
+  let ok=0;
+  for(const r of pending){if(await syncRecord(r))ok++;}
+  btn.disabled=false;
+  btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> SYNC ALL`;
+  showToast(ok>0?`✓ SYNCED ${ok} RECORD${ok>1?'S':''}`:'NOTHING TO SYNC');
+  renderRecs();updateBadge();
+}
+function autoSync(){
+  if(getRecs().filter(r=>!r.synced).length>0)syncAll();
+}
+function markSynced(id){
+  const all=getRecs();
+  const idx=all.findIndex(r=>r.id===id);
+  if(idx>-1){all[idx].synced=true;setRecs(all);}
+  updateBadge();
+  if(document.body.getAttribute('data-page')==='rec')renderRecs();
+}
+
+// RECORDS LIST
+function renderRecs(){
+  const list=document.getElementById('rec-list');
+  const recs=getRecs();
+  const pend=recs.filter(r=>!r.synced).length;
+  document.getElementById('pend-lbl').textContent=pend>0?`${pend} PENDING`:'ALL SYNCED ✓';
+  if(!recs.length){
+    list.innerHTML='<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><p>NO INSPECTIONS SAVED YET</p></div>';
+    return;
+  }
+  list.innerHTML=recs.map(r=>{
+    const defectCount=INSP_ITEMS.filter(it=>r[it.id]==='NOT OK').length;
+    const synced=r.synced;
+    return `
+    <div class="rec-card">
+      <div class="rec-top">
+        <div style="flex:1;min-width:0;">
+          <div class="rec-title">FLT ${r.flightno} · ${r.acreg}</div>
+          <div class="rec-sub">${r.date} · ${r.inspector1}${r.inspector2?' & '+r.inspector2:''}</div>
+          ${defectCount>0?`<span class="defect-chip">${defectCount} DEFECT${defectCount>1?'S':''} FOUND</span>`:''}
+        </div>
+        <span class="rbadge ${synced?'rbadge-s':'rbadge-p'}">
+          ${synced?'<svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> SYNCED':'⏳ PENDING'}
+        </span>
+      </div>
+      ${synced?`
+        <div class="rec-actions"><div class="rac-btn view">VIEW ONLY</div></div>
+        <div class="lock-note">Synced records are locked — cannot edit or delete</div>
+      `:`
+        <div class="rec-actions">
+          <button class="rac-btn edit" onclick="startEdit(${r.id})">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            EDIT
+          </button>
+          <button class="rac-btn del" onclick="deleteRec(${r.id})">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+            DELETE
+          </button>
+        </div>
+      `}
+    </div>`;
+  }).join('');
+}
+function updateBadge(){
+  const pend=getRecs().filter(r=>!r.synced).length;
+  const b=document.getElementById('nb-badge');
+  b.style.display=pend>0?'block':'none';
+  b.textContent=pend;
+}
+
+// PAGE NAV
+function showPage(name){
+  if(name==='rec'&&editingId)cancelEdit();
+  document.body.setAttribute('data-page',name);
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('act'));
+  document.querySelectorAll('.nbtn').forEach(b=>b.classList.remove('act'));
+  document.getElementById('page-'+name).classList.add('act');
+  document.getElementById('nb-'+name).classList.add('act');
+  if(name==='rec')renderRecs();
+}
+
+// TOAST
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
